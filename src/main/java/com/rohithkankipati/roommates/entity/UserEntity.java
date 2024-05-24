@@ -8,9 +8,13 @@ public class UserEntity {
   
   @Id
   private String id;
+  
   private String username;
+  
   private String firstname;
+  
   private String lastname;
+  
   private String password;
   
   public String getId() {
