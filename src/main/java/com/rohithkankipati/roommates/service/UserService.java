@@ -1,13 +1,19 @@
 package com.rohithkankipati.roommates.service;
 
+import java.util.Collections;
 import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.rohithkankipati.roommates.dto.UserDTO;
 import com.rohithkankipati.roommates.entity.UserEntity;
+import com.rohithkankipati.roommates.exception.RoomMateException;
+import com.rohithkankipati.roommates.model.UserRole;
 import com.rohithkankipati.roommates.repository.UserRepository;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.data.mongodb.core.MongoTemplate;
 
 @Service
 public class UserService {
@@ -18,68 +24,55 @@ public class UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private MongoTemplate mongoTemplate;
+    @Transactional
+    public UserDTO createAccount(UserDTO userDTO) {
+	if (userRepository.existsByUserName(userDTO.getUserName())) {
+	    throw new RoomMateException("create_user.username.exists", HttpStatus.BAD_REQUEST);
+	}
+	if (userRepository.existsByEmail(userDTO.getEmail())) {
+	    throw new RoomMateException("create_user.email.exists", HttpStatus.BAD_REQUEST);
+	}
+	if (userRepository.existsByMobileNumber(userDTO.getMobileNumber())) {
+	    throw new RoomMateException("create_user.phone.exists", HttpStatus.BAD_REQUEST);
+	}
 
-    /**
-     * Creates a new user account.
-     * @param user The user details.
-     * @return The saved User object.
-     */
-    public UserDTO createAccount(UserDTO user) {
-        // Implementation will be discussed.
-        return null;
+	if (userDTO.getRoles() == null || userDTO.getRoles().isEmpty()) {
+	    userDTO.setRoles(Collections.singleton(UserRole.USER));
+	}
+
+	UserEntity userEntity = new UserEntity(userDTO);
+	userEntity.setPassword(passwordEncoder.encode(userDTO.getPassword()));
+
+	userEntity = userRepository.save(userEntity);
+	return userDTO.fromEntity(userEntity);
     }
 
-   
     public UserDTO login(String identifier, String password) {
-      
-      Optional<UserEntity> userOptional = userRepository.findByUsernameOrEmailOrPhoneNumber(identifier);
-      if (userOptional.isPresent() && passwordEncoder.matches(password, userOptional.get().getPassword())) {
-          return userOptional.get().toUserDTO();
-      }
-      throw new IllegalArgumentException("Invalid username/email/phone number or password.");
+
+	Optional<UserEntity> userOptional = userRepository.findByUsernameOrEmailOrPhoneNumber(identifier);
+	if (userOptional.isPresent() && passwordEncoder.matches(password, userOptional.get().getPassword())) {
+	    return userOptional.get().toUserDTO();
+	}
+	throw new RoomMateException("login.failed", HttpStatus.BAD_REQUEST);
     }
 
-    /**
-     * Changes the user's password.
-     * @param userId The ID of the user.
-     * @param oldPassword The current password.
-     * @param newPassword The new password.
-     * @return True if the password was successfully changed, false otherwise.
-     */
+    public boolean checkUsernameExists(String username) {
+	return userRepository.existsByUserName(username);
+    }
+
     public boolean changePassword(String userId, String oldPassword, String newPassword) {
-        // Implementation will be discussed.
-        return false;
+	return false;
     }
 
-    /**
-     * Handles password reset requests.
-     * @param email The email associated with the account.
-     * @return True if the reset email was sent successfully, false otherwise.
-     */
     public boolean forgetPassword(String email) {
-        // Implementation will be discussed.
-        return false;
+	return false;
     }
 
-    /**
-     * Retrieves the profile of a user.
-     * @param userId The ID of the user.
-     * @return The User object if found, null otherwise.
-     */
     public UserDTO getProfile(String userId) {
-        // Implementation will be discussed.
-        return null;
+	return null;
     }
 
-    /**
-     * Handles user logout.
-     * @param userId The ID of the user who is logging out.
-     * @return True if logout was successful, false otherwise.
-     */
     public boolean logout(String userId) {
-        // Implementation will be discussed.
-        return false;
+	return false;
     }
 }

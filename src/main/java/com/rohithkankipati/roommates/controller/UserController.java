@@ -1,92 +1,88 @@
 package com.rohithkankipati.roommates.controller;
 
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.rohithkankipati.roommates.dto.LoginRequestDTO;
 import com.rohithkankipati.roommates.dto.UserDTO;
+import com.rohithkankipati.roommates.exception.RoomMateException;
 import com.rohithkankipati.roommates.service.UserService;
 import com.rohithkankipati.roommates.util.JwtTokenUtil;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/users")
 public class UserController {
 
     @Autowired
     private UserService userService;
-    
+
     @Autowired
     private JwtTokenUtil jwtTokenUtil;
-    
-    @PostMapping("/login")
+
+    @PostMapping("/api/login")
     public ResponseEntity<?> login(@RequestBody LoginRequestDTO loginRequest) {
-        try {
-            UserDTO user = userService.login(loginRequest.getUsername(), loginRequest.getPassword());
-            String token = jwtTokenUtil.generateToken(user);
-            user.setJwtToken(token);
-            return ResponseEntity.ok().body(user);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+	try {
+	    UserDTO user = userService.login(loginRequest.getUsername(), loginRequest.getPassword());
+	    String token = jwtTokenUtil.generateToken(user);
+	    user.setJwtToken(token);
+	    return ResponseEntity.ok().body(user);
+	} catch (RoomMateException e) {
+	    throw e;
+	}
     }
 
-    @PostMapping("/create")
+    @PostMapping("/api/create")
     public ResponseEntity<UserDTO> createAccount(@RequestBody UserDTO userDto) {
+	try {
 
-
-        UserDTO createdUser = userService.createAccount(userDto);
-        if (createdUser == null) {
-            return ResponseEntity.badRequest().build();
-        }
-        return ResponseEntity.ok(createdUser);
+	    UserDTO createdUser = userService.createAccount(userDto);
+	    String token = jwtTokenUtil.generateToken(createdUser);
+	    createdUser.setJwtToken(token);
+	    return ResponseEntity.ok(createdUser);
+	} catch (RoomMateException e) {
+	    throw e;
+	}
     }
 
-//    @PostMapping("/login")
-//    public ResponseEntity<UserDTO> login(@RequestParam String username, @RequestParam String password) {
-//        UserDTO user = userService.login(username, password);
-//        if (user == null) {
-//            return ResponseEntity.status(401).build();  // Unauthorized
-//        }
-//        return ResponseEntity.ok(user);
-//    }
+    @GetMapping("/api/username-exists")
+    public ResponseEntity<?> checkUsernameExists(@RequestParam String username) {
+	boolean exists = userService.checkUsernameExists(username);
+	return ResponseEntity.ok().body("{\"exists\": " + exists + "}");
+    }
 
-//    @PutMapping("/change-password")
-//    public ResponseEntity<Void> changePassword(@RequestBody PasswordChangeDto passwordChangeDto) {
-//        boolean success = userService.changePassword(
-//            passwordChangeDto.getUserId(),
-//            passwordChangeDto.getOldPassword(),
-//            passwordChangeDto.getNewPassword()
-//        );
-//        if (!success) {
-//            return ResponseEntity.badRequest().build();
-//        }
-//        return ResponseEntity.ok().build();
-//    }
-//
-//    @PostMapping("/forget-password")
-//    public ResponseEntity<Void> forgetPassword(@RequestParam String email) {
-//        boolean success = userService.forgetPassword(email);
-//        if (!success) {
-//            return ResponseEntity.badRequest().build();
-//        }
-//        return ResponseEntity.ok().build();
-//    }
-//
-//    @GetMapping("/profile/{userId}")
-//    public ResponseEntity<UserDTO> getProfile(@PathVariable String userId) {
-//        UserDTO user = userService.getProfile(userId);
-//        if (user == null) {
-//            return ResponseEntity.notFound().build();
-//        }
-//        return ResponseEntity.ok(user);
-//    }
-//
-//    @PostMapping("/logout")
-//    public ResponseEntity<Void> logout(@RequestParam String userId) {
-//        boolean success = userService.logout(userId);
-//        if (!success) {
-//            return ResponseEntity.badRequest().build();
-//        }
-//        return ResponseEntity.ok().build();
-//    }
+    @PostMapping("/change-password")
+    @ResponseStatus(value = HttpStatus.NOT_IMPLEMENTED, reason = "This API feature is not implemented yet.")
+    public ResponseEntity<Void> changePassword(@RequestBody Map<String, Object> passwordChangeDto) {
+	return null;
+
+    }
+
+    @PostMapping("/forget-password")
+    @ResponseStatus(value = HttpStatus.NOT_IMPLEMENTED, reason = "This API feature is not implemented yet.")
+    public ResponseEntity<Void> forgetPassword(@RequestParam String email) {
+	return null;
+    }
+
+    @GetMapping("/profile/{userId}")
+    @ResponseStatus(value = HttpStatus.NOT_IMPLEMENTED, reason = "This API feature is not implemented yet.")
+    public ResponseEntity<UserDTO> getProfile(@PathVariable String userId) {
+	return null;
+    }
+
+    @PostMapping("/logout")
+    @ResponseStatus(value = HttpStatus.NOT_IMPLEMENTED, reason = "This API feature is not implemented yet.")
+    public ResponseEntity<Void> logout(@RequestParam String userId) {
+	return null;
+    }
 }
