@@ -53,7 +53,8 @@ public class UserServiceTest {
 	userDTO.setRoles(Collections.singleton(UserRole.USER));
 	userDTO.setMobileNumber("1234567890");
 
-	userEntity = new UserEntity(userDTO);
+	userEntity = new UserEntity();
+	userEntity.fromUserDTO(userDTO);
 	userEntity.setPassword("encodedPassword");
     }
 
@@ -63,7 +64,7 @@ public class UserServiceTest {
 	when(userRepository.existsByEmail(userDTO.getEmail())).thenReturn(false);
 	when(userRepository.existsByMobileNumber(userDTO.getMobileNumber())).thenReturn(false);
 	when(passwordEncoder.encode(userDTO.getPassword())).thenReturn("encodedPassword");
-	when(userRepository.save(any(UserEntity.class))).thenReturn(new UserEntity(userDTO));
+	when(userRepository.save(any(UserEntity.class))).thenReturn(userEntity);
 
 	UserDTO result = userService.createAccount(userDTO);
 

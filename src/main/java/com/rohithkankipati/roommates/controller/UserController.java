@@ -55,6 +55,18 @@ public class UserController {
 	}
     }
 
+    @GetMapping("/profile/{userName}")
+    public ResponseEntity<UserDTO> getProfile(@PathVariable String userName) {
+
+	try {
+	    UserDTO createdUser = userService.getProfile(userName);
+	    return ResponseEntity.ok(createdUser);
+	} catch (RoomMateException e) {
+	    throw e;
+	}
+
+    }
+
     @GetMapping("/api/username-exists")
     public ResponseEntity<?> checkUsernameExists(@RequestParam String username) {
 	boolean exists = userService.checkUsernameExists(username);
@@ -71,12 +83,6 @@ public class UserController {
     @PostMapping("/forget-password")
     @ResponseStatus(value = HttpStatus.NOT_IMPLEMENTED, reason = "This API feature is not implemented yet.")
     public ResponseEntity<Void> forgetPassword(@RequestParam String email) {
-	return null;
-    }
-
-    @GetMapping("/profile/{userId}")
-    @ResponseStatus(value = HttpStatus.NOT_IMPLEMENTED, reason = "This API feature is not implemented yet.")
-    public ResponseEntity<UserDTO> getProfile(@PathVariable String userId) {
 	return null;
     }
 

@@ -13,7 +13,7 @@ public interface UserRepository extends MongoRepository<UserEntity, String> {
 
     Optional<UserEntity> findByUserName(String userName);
 
-    UserEntity findByEmail(String email);
+    Optional<UserEntity> findByEmail(String email);
 
     @Query("{'$or': [{'username': ?0}, {'email': ?0}, {'mobileNumber': ?0}]}")
     Optional<UserEntity> findByUsernameOrEmailOrPhoneNumber(String identifier);

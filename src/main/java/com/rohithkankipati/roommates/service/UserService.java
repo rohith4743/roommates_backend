@@ -40,7 +40,8 @@ public class UserService {
 	    userDTO.setRoles(Collections.singleton(UserRole.USER));
 	}
 
-	UserEntity userEntity = new UserEntity(userDTO);
+	UserEntity userEntity = new UserEntity();
+	userEntity.fromUserDTO(userDTO);
 	userEntity.setPassword(passwordEncoder.encode(userDTO.getPassword()));
 
 	userEntity = userRepository.save(userEntity);
@@ -50,6 +51,7 @@ public class UserService {
     public UserDTO login(String identifier, String password) {
 
 	Optional<UserEntity> userOptional = userRepository.findByUsernameOrEmailOrPhoneNumber(identifier);
+
 	if (userOptional.isPresent() && passwordEncoder.matches(password, userOptional.get().getPassword())) {
 	    return userOptional.get().toUserDTO();
 	}
@@ -68,8 +70,20 @@ public class UserService {
 	return false;
     }
 
-    public UserDTO getProfile(String userId) {
-	return null;
+    public UserDTO getProfile(String userName) {
+
+	Optional<UserEntity> userOptional = userRepository.findByUserName(userName);
+	if (userOptional.isPresent()) {
+	    UserEntity userEntity = userOptional.get();
+	    UserDTO userDTO = new UserDTO();
+	    userDTO.setEmail(userEntity.getEmail());
+	    userDTO.setFirstName(userEntity.getFirstName());
+	    userDTO.setLastName(userEntity.getLastName());
+	    userDTO.setMobileNumber(userEntity.getMobileNumber());
+	    userDTO.setUserName(userName);
+	    return userDTO;
+	}
+	throw new RoomMateException("profile.not_found", HttpStatus.BAD_REQUEST);
     }
 
     public boolean logout(String userId) {
